@@ -2,13 +2,14 @@ use crate::error::BlsError;
 use alloy_primitives::U256;
 use ark_bn254::{Bn254, Fq, Fq2, Fr, G1Affine, G1Projective, G2Projective};
 use ark_ec::{pairing::Pairing, CurveGroup};
-use ark_ff::{BigInteger256, Field, One, PrimeField};
+use ark_ff::{BigInteger256, Field, One, PrimeField, Zero};
 use eigen_crypto_bn254::utils::{
     get_g2_generator, mul_by_generator_g1, mul_by_generator_g2, u256_to_bigint256,
 };
 use hex::FromHex;
 use std::fmt::Write;
-use std::ops::{Add, Mul};
+use std::ops::{Add, Mul, Neg};
+
 pub fn new_fp_element(x: BigInteger256) -> Fq {
     Fq::from(x)
 }
@@ -47,12 +48,9 @@ impl Signature {
 
         let g2_affine = pubkey.into_affine();
 
-        let generator = get_g2_generator().unwrap();
-        let pairing_left = Bn254::pairing(g1_affine, generator);
+        let generator_neg = get_g2_generator().unwrap().neg();
 
-        let pairing_right = Bn254::pairing(msg_hash, g2_affine);
-
-        pairing_left == pairing_right
+        Bn254::multi_pairing([g1_affine, msg_hash], [generator_neg, g2_affine]).is_zero()
     }
 }
 
