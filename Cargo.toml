@@ -31,6 +31,7 @@ members = [
     "examples/info-operator-service/",
     "examples/operator/",
     "examples/task-generator/",
+    "examples/new-interface/",
     "tests/testing-utils/",
     "tests/integration/",
 ]
