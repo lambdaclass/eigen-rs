@@ -3,8 +3,8 @@ use alloy::primitives::Address;
 use eigen_crypto_bls::BlsKeyPair;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 /// Operator configuration struct
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OperatorConfig {
     /// BLS key pair of the operator
     pub bls_key_pair: BlsKeyPair,
@@ -24,6 +24,6 @@ pub struct OperatorConfig {
     pub operator_state_retriever_address: Address,
     /// IP and port of the aggregator
     pub aggregator_ip_port: String,
-
+    /// Operator registration config
     pub registration: Option<OperatorRegistrationConfig>,
 }
