@@ -783,24 +783,9 @@ mod tests {
 
     #[test]
     fn test_serde_bls_key_pair_with_random() {
-        let priv_key = Fr::new(
-            BigInt::from_str(
-                "12248929636257230549931416853095037629726205319386239410403476017439825112537",
-            )
-            .unwrap(),
-        );
-        let x_point = Fq::from_str(
-            "17709620697113958145616918533531128159269167719799793368595970620022661612059",
-        )
-        .unwrap();
-        let y_point = Fq::from_str(
-            "9890439522434691655532127414660267222813910180198976870423582442696952349816",
-        )
-        .unwrap();
-        let g1_affine = G1Affine::new(x_point, y_point);
-        let pub_key = BlsG1Point { g1: g1_affine };
-
-        let original = BlsKeyPair { priv_key, pub_key };
+        let bls_priv_key =
+            "12248929636257230549931416853095037629726205319386239410403476017439825112537";
+        let original = BlsKeyPair::new(bls_priv_key.to_string()).unwrap();
 
         let json = serde_json::to_string(&original).unwrap();
         let decoded: BlsKeyPair = serde_json::from_str(&json).unwrap();
