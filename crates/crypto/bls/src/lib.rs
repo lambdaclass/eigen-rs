@@ -12,7 +12,7 @@ use crate::error::BlsError;
 use ark_bn254::{g1::G1Affine, Fq, Fr, G1Projective, G2Affine, G2Projective};
 use ark_ec::{AffineRepr, CurveGroup};
 use ark_ff::{fields::PrimeField, BigInt, BigInteger256, Fp2};
-use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
+use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, Compress, Validate};
 use eigen_crypto_bn254::utils::map_to_curve;
 use eigen_utils::slashing::middleware::blsapkregistry::BN254::{
     G1Point as G1PointRegistry, G2Point as G2PointRegistry,
@@ -24,12 +24,13 @@ use eigen_utils::slashing::middleware::registrycoordinator::BN254::{G1Point, G2P
 use eigen_utils::slashing::middleware::slashingregistrycoordinator::BN254::G1Point as G1PointSlashing;
 use serde::de::{self, Visitor};
 use serde::{Deserialize, Serialize};
+
 pub type PrivateKey = Fr;
 pub type PublicKey = G1Affine;
 pub type BlsSignature = G1Affine;
 pub type OperatorId = B256;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, CanonicalSerialize, CanonicalDeserialize)]
 pub struct BlsG1Point {
     g1: G1Affine,
 }
@@ -148,12 +149,13 @@ impl<'de> Deserialize<'de> for BlsG2Point {
 }
 
 /// Bls key pair with public key on G1
-#[derive(Debug, Clone /*Serialize, Deserialize*/)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BlsKeyPair {
     /// Private Key
-    //#[serde(deserialize_with = "path")]
+    #[serde(serialize_with = "ark_se", deserialize_with = "ark_de")]
     priv_key: Fr,
     /// Public Key on G1
+    #[serde(serialize_with = "ark_se", deserialize_with = "ark_de")]
     pub_key: BlsG1Point,
 }
 
@@ -381,6 +383,44 @@ impl Signature {
     pub fn g1_point(&self) -> BlsG1Point {
         self.g1_point.clone()
     }
+}
+
+/// Serialize [`CanonicalSerialize`] to [`Vec<u8>`]
+///
+/// # Arguments
+///
+/// * `a`: The value to serialize
+/// * `s`: The serializer
+///
+/// # Returns
+///
+/// * `Result<S::Ok, S::Error>` - The serialized value
+fn ark_se<S, A: CanonicalSerialize>(a: &A, s: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    let mut bytes = vec![];
+    a.serialize_with_mode(&mut bytes, Compress::Yes)
+        .map_err(serde::ser::Error::custom)?;
+    s.serialize_bytes(&bytes)
+}
+
+/// Deserialize [`Vec<u8>`] to [`CanonicalDeserialize`]
+///
+/// # Arguments
+///
+/// * `data`: The value to deserialize
+///
+/// # Returns
+///
+/// * `Result<A, D::Error>` - The deserialized value
+fn ark_de<'de, D, A: CanonicalDeserialize>(data: D) -> Result<A, D::Error>
+where
+    D: serde::de::Deserializer<'de>,
+{
+    let s: Vec<u8> = serde::de::Deserialize::deserialize(data)?;
+    let a = A::deserialize_with_mode(s.as_slice(), Compress::Yes, Validate::Yes);
+    a.map_err(serde::de::Error::custom)
 }
 
 #[cfg(test)]
@@ -741,8 +781,8 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_bls_key_pair() {
-        BlsKeyPair
-    }
+    // #[test]
+    // fn test_bls_key_pair() {
+    //     BlsKeyPair
+    // }
 }
