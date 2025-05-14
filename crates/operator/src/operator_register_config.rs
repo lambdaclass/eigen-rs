@@ -2,6 +2,8 @@ use alloy::primitives::{Address, U256};
 use eigen_crypto_bls::BlsKeyPair;
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
 pub struct OperatorRegistrationConfig {
     pub bls_key_pair: BlsKeyPair,
     pub operator_pvt_key: Option<String>,

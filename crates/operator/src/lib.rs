@@ -8,6 +8,7 @@ use alloy::{
     sol_types::SolValue,
 };
 use client::ClientAggregator;
+use config::OperatorConfig;
 use eigen_aggregator::SignedTaskResponse;
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_crypto_bls::BlsKeyPair;
@@ -60,11 +61,8 @@ impl Operator {
     /// # Returns
     ///
     /// * `Result<Self, OperatorError>` - The operator.
-    pub async fn new(
-        logger: SharedLogger,
-        config: config::OperatorConfig,
-    ) -> Result<Self, OperatorError> {
-        let config::OperatorConfig {
+    pub async fn new(logger: SharedLogger, config: OperatorConfig) -> Result<Self, OperatorError> {
+        let OperatorConfig {
             bls_key_pair,
             operator_address,
             operator_name,
@@ -73,7 +71,7 @@ impl Operator {
             registry_coordinator_address,
             operator_state_retriever_address,
             aggregator_ip_port,
-            registration,
+            registration: _,
         } = config;
         let avs_registry_reader = AvsRegistryChainReader::new(
             logger,
