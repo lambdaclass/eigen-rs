@@ -27,6 +27,8 @@ pub mod client;
 pub mod config;
 /// Error
 pub mod error;
+/// Operator registeration config
+pub mod operator_register_config;
 
 /// Operator struct to handle the operator logic of processing new tasks
 /// and sending signed task responses to the aggregator.
@@ -71,6 +73,7 @@ impl Operator {
             registry_coordinator_address,
             operator_state_retriever_address,
             aggregator_ip_port,
+            registration,
         } = config;
         let avs_registry_reader = AvsRegistryChainReader::new(
             logger,
